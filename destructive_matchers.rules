@@ -1,0 +1,19 @@
+# format: action|id|regex
+# action: deny (always block) | confirm (block unless GEMINI_ALLOW_DESTRUCTIVE=1)
+
+# File Deletion
+confirm|powershell_remove_item|(^|[[:space:];|&()])(Remove-Item|ri|rm|del|erase)([[:space:]]+[^;|&()]*)*-Recurse([[:space:];|&()]|$)
+confirm|cmd_del_recursive|(^|[[:space:];|&()])(del|erase)([[:space:]]+[^;|&()]*)*\/s([[:space:];|&()]|$)
+deny|rm_rf_root|(^|[[:space:];|&()])(Remove-Item|ri|rm|del|erase)([[:space:]]+[^;|&()]*)*[[:space:]]+[A-Z]:\\([[:space:];|&()]|$)
+
+# Disk and Partition Management
+confirm|diskpart|(^|[[:space:];|&()])diskpart([[:space:];|&()]|$)
+confirm|format_volume|(^|[[:space:];|&()])(format|Format-Volume)([[:space:];|&()]|$)
+confirm|initialize_disk|(^|[[:space:];|&()])Initialize-Disk([[:space:];|&()]|$)
+
+# System Operations
+confirm|power_ops|(^|[[:space:];|&()])(Stop-Computer|Restart-Computer|shutdown|reboot)([[:space:];|&()]|$)
+confirm|registry_delete|(^|[[:space:];|&()])reg[[:space:]]+delete([[:space:];|&()]|$)
+
+# Network/Security
+confirm|net_user_delete|(^|[[:space:];|&()])net[[:space:]]+user[[:space:]]+[^;|&()]*[[:space:]]+\/delete([[:space:];|&()]|$)

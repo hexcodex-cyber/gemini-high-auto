@@ -1,0 +1,34 @@
+# gemini-high-auto
+
+A Windows-native high-autonomy Gemini launcher with a local PowerShell guard script to block or confirm risky destructive commands by regex policy.
+
+## Architecture
+
+This project is a port of the Linux `codex-high-auto` utility. It provides:
+- **`gemini-high-auto.cmd`**: Launcher batch file that sets environment variables and starts Gemini in high-autonomy mode.
+- **`gemini-guard.ps1`**: PowerShell guard script that intercepts shell commands, matching them against local safety rules.
+- **`destructive_matchers.rules`**: Configuration file containing regex patterns for dangerous Windows commands (e.g., `Remove-Item -Recurse`, `Format-Volume`, `diskpart`).
+
+## How it Works
+
+When `gemini-high-auto` is launched, it sets the `GEMINI_GUARD_SHELL` environment variable. The Gemini CLI utilizes this to run shell operations through the guard script. If a command matches a "deny" rule, it's blocked; if it matches a "confirm" rule, it's blocked unless an override is provided.
+
+## Usage
+
+1. Add this folder to your system `PATH`.
+2. Run `gemini-high-auto` from your terminal:
+   ```cmd
+   gemini-high-auto
+   ```
+
+## Override (Intentional Destructive Operations)
+
+If you explicitly need to run a command that is being blocked:
+```powershell
+$env:GEMINI_ALLOW_DESTRUCTIVE=1
+gemini-high-auto
+```
+
+## Warning
+
+This setup runs Gemini in a high-autonomy mode that bypasses most user approvals. Use only on systems where you have full control and recent backups.
