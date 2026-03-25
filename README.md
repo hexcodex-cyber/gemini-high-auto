@@ -1,5 +1,8 @@
 # gemini-high-auto
 
+> [!CAUTION]
+> **READ THE [DISCLAIMER.md](DISCLAIMER.md) BEFORE USE.** High-autonomy operations carry significant risk of data loss. By using this tool, you assume all responsibility for any damage caused.
+
 A Windows-native high-autonomy Gemini launcher with a local PowerShell guard script to block or confirm risky destructive commands by regex policy.
 
 ## Architecture
