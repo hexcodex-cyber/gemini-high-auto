@@ -6,3 +6,7 @@ Desktop.ini
 *.swp
 *.tmp
 .vs/
+
+# Gemini-High-Auto
+logs/
+memory/

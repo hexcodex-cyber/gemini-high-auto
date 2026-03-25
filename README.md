@@ -21,6 +21,18 @@ When `gemini-high-auto` is launched, it sets the `GEMINI_GUARD_SHELL` environmen
    gemini-high-auto
    ```
 
+## Session Logging
+
+Every time `gemini-high-auto` is executed, it automatically generates a unique session log in the `logs/` directory.
+
+- **File Format:** `logs/session-YYYY-DD-MM-HHMM.md`
+- **Content:**
+  - Initial user request.
+  - Chronological list of all shell commands executed.
+  - Status for each command: `ALLOW`, `DENY` (blocked by rule), or `BLOCK` (confirmation required).
+
+This provides a clear audit trail of all high-autonomy actions taken by the CLI.
+
 ## Override (Intentional Destructive Operations)
 
 If you explicitly need to run a command that is being blocked:
