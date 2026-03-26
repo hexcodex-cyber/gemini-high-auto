@@ -1,0 +1,11 @@
+# Ignore common large directories to prevent CLI repetition loops
+.git/
+node_modules/
+dist/
+build/
+bin/
+obj/
+*.log
+memory/
+logs/
+.env

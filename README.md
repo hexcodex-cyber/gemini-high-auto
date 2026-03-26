@@ -3,14 +3,14 @@
 > [!CAUTION]
 > **READ THE [DISCLAIMER.md](DISCLAIMER.md) BEFORE USE.** High-autonomy operations carry significant risk of data loss. By using this tool, you assume all responsibility for any damage caused.
 
-A Windows-native high-autonomy Gemini launcher with a local PowerShell guard script to block or confirm risky destructive commands by regex policy.
+A cross-platform (Windows/Linux) high-autonomy Gemini launcher with a local guard script to block or confirm risky destructive commands by regex policy.
 
 ## Architecture
 
-This project is a port of the Linux `codex-high-auto` utility. It provides:
-- **`gemini-high-auto.cmd`**: Launcher batch file that sets environment variables and starts Gemini in high-autonomy mode.
-- **`gemini-guard.ps1`**: PowerShell guard script that intercepts shell commands, matching them against local safety rules.
-- **`destructive_matchers.rules`**: Configuration file containing regex patterns for dangerous Windows commands (e.g., `Remove-Item -Recurse`, `Format-Volume`, `diskpart`).
+This project provides:
+- **`gemini-high-auto.sh` / `.cmd`**: Launchers that set environment variables and start Gemini in high-autonomy mode (`--approval-mode yolo`).
+- **`gemini-guard.sh` / `.ps1`**: Guard scripts (Bash/PowerShell) that intercept shell commands, matching them against local safety rules.
+- **`destructive_matchers.rules`**: Configuration file containing regex patterns for dangerous commands (e.g., `rm -rf`, `format`, `dd`).
 
 ## How it Works
 
@@ -18,30 +18,46 @@ When `gemini-high-auto` is launched, it sets the `GEMINI_GUARD_SHELL` environmen
 
 ## Usage
 
+### Windows
 1. Add this folder to your system `PATH`.
 2. Run `gemini-high-auto` from your terminal:
    ```cmd
-   gemini-high-auto
+   gemini-high-auto "Refactor my project"
    ```
 
-## Session Logging
+### Linux
+1. Ensure `gemini-guard.sh` and `gemini-high-auto.sh` are executable:
+   ```bash
+   chmod +x gemini-*.sh
+   ```
+2. Run the launcher:
+   ```bash
+   ./gemini-high-auto.sh "Refactor my project"
+   ```
 
-Every time `gemini-high-auto` is executed, it automatically generates a unique session log in the `logs/` directory.
+## Episodic Memory & Session Logging
 
-- **File Format:** `logs/session-YYYY-DD-MM-HHMM.md`
-- **Content:**
-  - Initial user request.
-  - Chronological list of all shell commands executed.
-  - Status for each command: `ALLOW`, `DENY` (blocked by rule), or `BLOCK` (confirmation required).
+Every interaction is automatically logged in the `memory/` directory to provide a persistent "flight recorder" for the AI's actions.
 
-This provides a clear audit trail of all high-autonomy actions taken by the CLI.
+- **History Logs:** `memory/history_YYYY-MM-DD.md` (detailed record of every shell command and its output).
+- **Episode Summary:** `memory/SUMMARY.md` (high-level milestones for long-running tasks).
+
+This allows the AI to "remember" its previous actions across sessions without re-reading thousands of lines of raw logs. See [EPISODIC-MEMORY.md](EPISODIC-MEMORY.md) for details.
 
 ## Override (Intentional Destructive Operations)
 
 If you explicitly need to run a command that is being blocked:
+
+**Windows:**
 ```powershell
 $env:GEMINI_ALLOW_DESTRUCTIVE=1
 gemini-high-auto
+```
+
+**Linux:**
+```bash
+export GEMINI_ALLOW_DESTRUCTIVE=1
+./gemini-high-auto.sh
 ```
 
 ## Warning
