@@ -15,12 +15,15 @@ LOG_FILE="$MEMORY_DIR/history_$LOG_DATE.md"
 mkdir -p "$MEMORY_DIR"
 [ ! -f "$SUMMARY_FILE" ] && echo "# Episode Summary" > "$SUMMARY_FILE"
 
-# Parse arguments. Gemini CLI usually calls the shell as: /bin/bash /path/to/guard.sh "command"
-# But we should be robust.
-if [[ $# -ge 2 && "$1" == "-lc" ]]; then
-  COMMAND="$2"
+# Parse arguments. 
+# We want to handle both "bash -c 'cmd'" and direct execution.
+if [[ "$1" == "-c" || "$1" == "-lc" ]]; then
+    COMMAND="$2"
+elif [[ $# -gt 0 ]]; then
+    COMMAND="$*"
 else
-  COMMAND="$1"
+    echo "gemini-guard: no command provided" >&2
+    exit 1
 fi
 
 INTERACTION_ID=$(cat /proc/sys/kernel/random/uuid | cut -c1-8)
@@ -28,7 +31,6 @@ TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S")
 GUARD_ACTION="ALLOWED"
 RULE_TRIGGERED="N/A"
 EXIT_CODE=0
-STDOUT_STDERR=""
 
 log_interaction() {
     cat <<EOF >> "$LOG_FILE"
@@ -91,9 +93,13 @@ else
 fi
 
 # --- Execution ---
-# Execute the command and capture merged stdout/stderr
-STDOUT_STDERR=$(bash -lc "$COMMAND" 2>&1)
-EXIT_CODE=$?
+# Execute the command, capture merged stdout/stderr for logging, 
+# AND output it to the terminal so the user/AI can see it.
+TMP_OUTPUT=$(mktemp)
+bash -lc "$COMMAND" 2>&1 | tee "$TMP_OUTPUT"
+EXIT_CODE=${PIPESTATUS[0]}
+STDOUT_STDERR=$(cat "$TMP_OUTPUT")
+rm "$TMP_OUTPUT"
 
 log_interaction
 update_summary
