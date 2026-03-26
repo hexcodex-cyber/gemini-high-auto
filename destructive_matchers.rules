@@ -1,19 +1,36 @@
 # format: action|id|regex
 # action: deny (always block) | confirm (block unless GEMINI_ALLOW_DESTRUCTIVE=1)
 
-# File Deletion
+# --- Windows Rules ---
 confirm|powershell_remove_item|(^|[[:space:];|&()])(Remove-Item|ri|rm|del|erase)([[:space:]]+[^;|&()]*)*-Recurse([[:space:];|&()]|$)
 confirm|cmd_del_recursive|(^|[[:space:];|&()])(del|erase)([[:space:]]+[^;|&()]*)*\/s([[:space:];|&()]|$)
-deny|rm_rf_root|(^|[[:space:];|&()])(Remove-Item|ri|rm|del|erase)([[:space:]]+[^;|&()]*)*[[:space:]]+[A-Z]:\\([[:space:];|&()]|$)
-
-# Disk and Partition Management
+deny|rm_rf_root_win|(^|[[:space:];|&()])(Remove-Item|ri|rm|del|erase)([[:space:]]+[^;|&()]*)*[[:space:]]+[A-Z]:\\([[:space:];|&()]|$)
 confirm|diskpart|(^|[[:space:];|&()])diskpart([[:space:];|&()]|$)
 confirm|format_volume|(^|[[:space:];|&()])(format|Format-Volume)([[:space:];|&()]|$)
 confirm|initialize_disk|(^|[[:space:];|&()])Initialize-Disk([[:space:];|&()]|$)
+confirm|power_ops_win|(^|[[:space:];|&()])(Stop-Computer|Restart-Computer|shutdown|reboot)([[:space:];|&()]|$)
+confirm|registry_delete|(^|[[:space:];|&()])reg[[:space:]]+delete([[:space:];|&()]|$)
+confirm|net_user_delete|(^|[[:space:];|&()])net[[:space:]]+user[[:space:]]+[^;|&()]*[[:space:]]+\/delete([[:space:];|&()]|$)
+
+# --- Linux Rules ---
+
+# Root File Deletion
+deny|rm_rf_root_linux|(^|[[:space:];|&()])rm([[:space:]]+[^;|&()]*)*-rf([[:space:]]+[^;|&()]*)*[[:space:]]+/([[:space:];|&()]|$)
+confirm|rm_rf_wildcard|(^|[[:space:];|&()])rm([[:space:]]+[^;|&()]*)*-rf([[:space:]]+[^;|&()]*)*[[:space:]]+(\*|/\*|/\.\*|\.\*)([[:space:];|&()]|$)
+
+# Disk and Partition Management
+deny|dd_block_device|(^|[[:space:];|&()])dd([[:space:]]|$).*of=/dev/(sd[a-z]+|nvme[0-9]+n[0-9]+|vd[a-z]+|xvd[a-z]+|mmcblk[0-9]+)
+confirm|disk_tools|(^|[[:space:];|&()])(mkfs(\.[[:alnum:]_+-]+)?|fdisk|sfdisk|cfdisk|parted)([[:space:];|&()]|$)
 
 # System Operations
-confirm|power_ops|(^|[[:space:];|&()])(Stop-Computer|Restart-Computer|shutdown|reboot)([[:space:];|&()]|$)
-confirm|registry_delete|(^|[[:space:];|&()])reg[[:space:]]+delete([[:space:];|&()]|$)
+confirm|power_ops_linux|(^|[[:space:];|&()])(shutdown|reboot|poweroff|halt)($|[[:space:];|&()])
+confirm|chmod_root_recursive|(^|[[:space:];|&()])chmod[[:space:]]+-R[[:space:]]+/([[:space:];|&()]|$)
+confirm|chown_root_recursive|(^|[[:space:];|&()])chown[[:space:]]+-R[[:space:]]+/([[:space:];|&()]|$)
 
-# Network/Security
-confirm|net_user_delete|(^|[[:space:];|&()])net[[:space:]]+user[[:space:]]+[^;|&()]*[[:space:]]+\/delete([[:space:];|&()]|$)
+# Development Safety
+confirm|git_reset_hard|(^|[[:space:];|&()])git[[:space:]]+reset[[:space:]]+--hard([[:space:];|&()]|$)
+confirm|git_clean_fdx|(^|[[:space:];|&()])git[[:space:]]+clean([[:space:]]+[^;|&()]*)*([[:space:]]-f[^[:space:]]*){1,}([[:space:]]-d[^[:space:]]*)?([[:space:]]-x[^[:space:]]*)?
+
+# Other
+confirm|fork_bomb|:\(\)[[:space:]]*\{[[:space:]]*:[[:space:]]*\|[[:space:]]*:[[:space:]]*&[[:space:]]*\}
+confirm|apt_purge|(^|[[:space:];|&()])apt(-get)?[[:space:]]+purge([[:space:];|&()]|$)
